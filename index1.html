@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Retrieval System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 50px;
+            padding-bottom: 20px;
+            color: blueviolet;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .container {
+            max-width: 730px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .sub-container {
+            margin-top: 20px;
+        }
+        h3{
+            color: gray;
+        }
+        .img {
+            margin-top: 10px;
+            background-color: rgb(212, 212, 212);
+            color: rgb(8, 8, 8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .submit {
+            margin-top: 10px;
+            background-color: rgb(246, 246, 247);
+            color: rgb(8, 8, 8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        /* Style for voice search icon */
+        .voice-search-icon {
+    width: 60px; /* Initial width */
+    height: auto; /* Maintain aspect ratio */
+    cursor: pointer;
+    transition: width 0.3s ease; /* Add transition effect */
+}
+
+.voice-search-icon:hover {
+    width: 80px; /* Increase width on hover */
+}
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Automatic Query Image Disambiguation for Content-Based Image Retrieval System</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="text_query">Text Query:</label>
+                <input type="text" class="form-control" name="text_query" placeholder="Enter text query">
+            </div>
+            <div class="form-group">
+                <label for="query_img">Upload Image:</label>
+                <input type="file" class="form-control-file img" name="query_img" accept="image/*">
+            </div>
+            <!-- Voice search option -->
+            <div class="form-group">
+                <label>Voice Query:</label><br>
+                <img src="/static/voice_img.jpg" class="voice-search-icon" onclick="startVoiceRecognition()">
+                
+            </div>
+            <button type="submit" class="btn btn-primary submit">Submit</button>
+        </form>
+        <!-- Remaining HTML content -->
+        <div class="sub-container">
+            <h2>Query:</h2>
+            {% if uploaded_img_path %}
+            <img src="{{ uploaded_img_path }}" class="img-fluid" alt="Query Image"> 
+            {% endif %}
+            {% if text_query %}
+            <p><h3>{{ text_query }}</h3></p>
+            {% endif %}
+            {% if voice_query %}
+            <p><h3>{{ text_query_from_voice }}</h3></p>
+            {% endif %}
+        </div>
+        <div class="sub-container">
+            <h2>Results:</h2>
+            {% if scores %}
+            {% for score in scores %}
+            <figure style="float: left; margin-right: 20px; margin-bottom: 20px;">
+                <img src="{{ score[1] }}" class="img-fluid" alt="Result Image">
+                <figcaption>Score: {{ score[0] }}</figcaption>
+            </figure>
+            {% endfor %}
+            {% endif %}
+            {% if img_paths %}
+            {% for image_path in img_paths %}
+            <img src="{{ image_path }}" class="img-fluid" alt="Result Image">
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Function to initiate voice recognition
+        function startVoiceRecognition() {
+            // Request microphone access
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    // Create SpeechRecognition object
+                    var recognition = new webkitSpeechRecognition();
+                    recognition.lang = 'en-US'; // Set language to English
+                    recognition.interimResults = false; // Do not return interim results
+                    
+                    // Start recognition
+                    recognition.start();
+                    
+                    // Handle recognition result
+                    recognition.onresult = function(event) {
+                        var transcript = event.results[0][0].transcript;
+                        // Populate text query input field with the recognized speech
+                        document.getElementsByName('text_query')[0].value = transcript;
+                    };
+                    
+                    // Handle recognition error
+                    recognition.onerror = function(event) {
+                        console.error('Recognition error:', event.error);
+                    };
+                })
+                .catch(function(err) {
+                    console.error('Error accessing microphone:', err);
+                });
+        }
+    </script>
+</body>
+</html>
